@@ -1,0 +1,5 @@
+pykrx
+pandas
+numpy
+ta
+rich
