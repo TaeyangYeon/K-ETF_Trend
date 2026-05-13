@@ -25,6 +25,7 @@ _GROUP_HOLDINGS: dict[str, tuple[str | None, str | None]] = {
 
 
 def load_state(path: str = "config/state.json") -> dict:
+    """Load portfolio state from JSON file; create default state if file does not exist."""
     p = Path(path)
     if not p.exists():
         state = dict(_DEFAULT_STATE)
@@ -35,11 +36,13 @@ def load_state(path: str = "config/state.json") -> dict:
 
 
 def save_state(state: dict, path: str = "config/state.json") -> None:
+    """Persist portfolio state to JSON file."""
     with open(path, "w", encoding="utf-8") as f:
         json.dump(state, f, ensure_ascii=False, indent=2)
 
 
 def detect_conflicts(state: dict) -> list[str]:
+    """Detect and return list of conflicting position warnings from current portfolio state."""
     warnings: list[str] = []
 
     bull_kospi = bool(state.get("KODEX200")) or bool(state.get("KODEX_LEVERAGE"))
@@ -65,7 +68,7 @@ def detect_conflicts(state: dict) -> list[str]:
 
 
 def filter_signals(raw_signals: dict, state: dict) -> dict:
-    """Post-filter signals from signal_engine based on current portfolio state."""
+    """Filter signals based on current holdings: only valid transitions (no duplicate entry/exit on same group)."""
     result: dict = {}
     for group_key, sig in raw_signals.items():
         holdings = _GROUP_HOLDINGS.get(group_key)

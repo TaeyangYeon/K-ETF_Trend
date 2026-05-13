@@ -13,6 +13,7 @@ class Signal(Enum):
 
 
 def _valid(*vals) -> bool:
+    """Validate that all values are numeric and not NaN."""
     for v in vals:
         try:
             if math.isnan(float(v)):
@@ -23,12 +24,14 @@ def _valid(*vals) -> bool:
 
 
 def is_above_cloud(close, span_a, span_b) -> bool:
+    """Check if close price is above both Ichimoku cloud spans."""
     if not _valid(close, span_a, span_b):
         return False
     return float(close) > float(span_a) and float(close) > float(span_b)
 
 
 def is_below_cloud(close, span_a, span_b) -> bool:
+    """Check if close price is below both Ichimoku cloud spans."""
     if not _valid(close, span_a, span_b):
         return False
     return float(close) < float(span_a) and float(close) < float(span_b)
@@ -185,11 +188,7 @@ def _nasdaq_inverse_signal(
 
 
 def generate_signals(market_data: dict, state: dict) -> dict:
-    """
-    market_data: dict mapping "{market}.{role}" keys to (daily_df, weekly_df) tuples
-    state: current portfolio holdings from state.json
-    Returns: dict mapping group keys to Signal (only groups with an actionable signal)
-    """
+    """Generate trading signals for all markets based on Ichimoku indicators and portfolio state; resolve KOSPI conflicts via ADX."""
     kospi_bull_d, kospi_bull_w = market_data.get("kospi.bull_1x", (None, None))
     kospi_bear_d, kospi_bear_w = market_data.get("kospi.bear_1x", (None, None))
     nasdaq_bull_d, nasdaq_bull_w = market_data.get("nasdaq.bull_1x", (None, None))

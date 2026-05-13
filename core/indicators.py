@@ -3,6 +3,7 @@ import ta
 
 
 def resample_weekly(daily_df: pd.DataFrame) -> pd.DataFrame:
+    """Resample daily OHLCV data to weekly (Friday close) using standard aggregations."""
     agg = {
         "시가": "first",
         "고가": "max",
@@ -19,6 +20,7 @@ def calc_ichimoku(
     base: int = 26,
     span: int = 52,
 ) -> pd.DataFrame:
+    """Calculate Ichimoku Cloud indicators (tenkan, kijun, span_a, span_b, chikou) and add to dataframe."""
     df = df.copy()
     high = df["고가"]
     low = df["저가"]
@@ -39,12 +41,14 @@ def calc_ichimoku(
 
 
 def calc_ma(df: pd.DataFrame, period: int = 60) -> pd.DataFrame:
+    """Calculate simple moving average and add to dataframe as ma_{period} column."""
     df = df.copy()
     df[f"ma_{period}"] = df["종가"].rolling(period).mean()
     return df
 
 
 def calc_adx(df: pd.DataFrame, period: int = 14) -> pd.DataFrame:
+    """Calculate Average Directional Index (ADX) and add to dataframe as adx column."""
     df = df.copy()
     indicator = ta.trend.ADXIndicator(
         high=df["고가"], low=df["저가"], close=df["종가"], window=period
@@ -56,6 +60,7 @@ def calc_adx(df: pd.DataFrame, period: int = 14) -> pd.DataFrame:
 def compute_all_indicators(
     daily_df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Compute Ichimoku, MA60, and ADX for daily data; return daily and resampled weekly dataframes."""
     daily = calc_ichimoku(daily_df)
     daily = calc_ma(daily)
     daily = calc_adx(daily)
