@@ -1,4 +1,4 @@
-import json
+import argparse
 import math
 from pathlib import Path
 
@@ -8,6 +8,7 @@ from rich.table import Table
 from core.data_provider import fetch_ohlcv
 from core.indicators import compute_all_indicators
 from core.signal_engine import Signal, generate_signals
+from core.portfolio_state import load_state, detect_conflicts, filter_signals
 
 CONFIG_PATH = Path(__file__).parent / "config" / "tickers.json"
 STATE_PATH = Path(__file__).parent / "config" / "state.json"
@@ -32,6 +33,14 @@ _SIGNAL_MARKUP = {
     Signal.NONE: "None",
 }
 
+_SUPPRESS_REASONS = {
+    Signal.BUY: "이미 보유 중 → BUY 억제",
+    Signal.SELL: "보유 없음 → SELL 억제",
+    Signal.UPGRADE: "1x 미보유 또는 2x 이미 보유 → UPGRADE 억제",
+}
+
+import json
+
 
 def load_tickers() -> list[dict]:
     with open(CONFIG_PATH, encoding="utf-8") as f:
@@ -41,11 +50,6 @@ def load_tickers() -> list[dict]:
         for role, info in roles.items():
             tickers.append({"market": market, "role": role, **info})
     return tickers
-
-
-def load_state() -> dict:
-    with open(STATE_PATH, encoding="utf-8") as f:
-        return json.load(f)
 
 
 def fmt(val, decimals: int = 0) -> str:
@@ -70,8 +74,19 @@ def cloud_pos(close: float, span_a: float, span_b: float) -> str:
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--verbose", action="store_true", help="억제된 시그널 상세 출력")
+    args = parser.parse_args()
+
     tickers = load_tickers()
-    state = load_state()
+    state = load_state(str(STATE_PATH))
+
+    # Conflict detection
+    conflict_warnings = detect_conflicts(state)
+    if conflict_warnings:
+        for w in conflict_warnings:
+            console.print(f"[bold yellow]{w}[/bold yellow]")
+        console.print()
 
     daily_table = Table(title="일봉 지표 (최신 거래일)", show_lines=True)
     daily_table.add_column("ETF", style="bold cyan", no_wrap=True)
@@ -132,14 +147,25 @@ def main():
     console.print()
     console.print(weekly_table)
 
-    signals = generate_signals(market_data, state)
+    raw_signals = generate_signals(market_data, state)
+    filtered_signals = filter_signals(raw_signals, state)
+
+    if args.verbose:
+        suppressed = {k: v for k, v in raw_signals.items() if k not in filtered_signals}
+        if suppressed:
+            console.print()
+            console.print("[dim]── 억제된 시그널 ──[/dim]")
+            for group_key, sig in suppressed.items():
+                label = _SIGNAL_GROUP_LABELS.get(group_key, group_key)
+                reason = _SUPPRESS_REASONS.get(sig, "억제")
+                console.print(f"[dim]  {label}: {sig.value} → {reason}[/dim]")
 
     signal_table = Table(title="매매 시그널", show_lines=True)
     signal_table.add_column("그룹", style="bold cyan", no_wrap=True)
     signal_table.add_column("시그널", justify="center")
 
-    if signals:
-        for group_key, sig in signals.items():
+    if filtered_signals:
+        for group_key, sig in filtered_signals.items():
             label = _SIGNAL_GROUP_LABELS.get(group_key, group_key)
             markup = _SIGNAL_MARKUP.get(sig, sig.value)
             signal_table.add_row(label, markup)
