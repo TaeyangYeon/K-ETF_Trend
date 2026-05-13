@@ -1,8 +1,14 @@
+import contextlib
+import io
 import time
 from datetime import datetime, timedelta
 
 import pandas as pd
-from pykrx import stock
+
+# pykrx prints a "KRX 로그인 실패" message at import time when KRX_ID/KRX_PW
+# env vars are absent. Suppress it — the API works fine without credentials.
+with contextlib.redirect_stdout(io.StringIO()):
+    from pykrx import stock
 
 
 def fetch_ohlcv(ticker: str, days: int = 300, logger=None) -> pd.DataFrame:

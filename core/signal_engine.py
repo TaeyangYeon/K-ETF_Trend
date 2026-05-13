@@ -48,6 +48,8 @@ def _kospi_bull_signal(
     close = float(d["종가"])
     span_a = float(d["ichimoku_span_a"])
     span_b = float(d["ichimoku_span_b"])
+    span_a_raw = float(d["ichimoku_span_a_raw"])
+    span_b_raw = float(d["ichimoku_span_b_raw"])
     ma60 = float(d["ma_60"])
 
     # SELL: any one condition triggers
@@ -70,7 +72,7 @@ def _kospi_bull_signal(
         if (
             is_above_cloud(close, span_a, span_b)
             and _valid(close, ma60) and close > ma60
-            and _valid(span_a, span_b) and span_a > span_b
+            and _valid(span_a_raw, span_b_raw) and span_a_raw > span_b_raw
         ):
             return Signal.BUY
 
@@ -88,6 +90,8 @@ def _kospi_bear_signal(
     close = float(d["종가"])
     span_a = float(d["ichimoku_span_a"])
     span_b = float(d["ichimoku_span_b"])
+    span_a_raw = float(d["ichimoku_span_a_raw"])
+    span_b_raw = float(d["ichimoku_span_b_raw"])
     ma60 = float(d["ma_60"])
 
     if holding_any:
@@ -107,7 +111,7 @@ def _kospi_bear_signal(
         if (
             is_above_cloud(close, span_a, span_b)
             and _valid(close, ma60) and close > ma60
-            and _valid(span_a, span_b) and span_a > span_b
+            and _valid(span_a_raw, span_b_raw) and span_a_raw > span_b_raw
         ):
             return Signal.BUY
 
@@ -125,6 +129,8 @@ def _nasdaq_bull_signal(
     close = float(d["종가"])
     span_a = float(d["ichimoku_span_a"])
     span_b = float(d["ichimoku_span_b"])
+    span_a_raw = float(d["ichimoku_span_a_raw"])
+    span_b_raw = float(d["ichimoku_span_b_raw"])
     ma60 = float(d["ma_60"])
 
     if holding_any:
@@ -144,7 +150,7 @@ def _nasdaq_bull_signal(
         if (
             is_above_cloud(close, span_a, span_b)
             and _valid(close, ma60) and close > ma60
-            and _valid(span_a, span_b) and span_a > span_b
+            and _valid(span_a_raw, span_b_raw) and span_a_raw > span_b_raw
         ):
             return Signal.BUY
 
@@ -161,6 +167,8 @@ def _nasdaq_inverse_signal(
     close = float(d["종가"])
     span_a = float(d["ichimoku_span_a"])
     span_b = float(d["ichimoku_span_b"])
+    span_a_raw = float(d["ichimoku_span_a_raw"])
+    span_b_raw = float(d["ichimoku_span_b_raw"])
     ma60 = float(d["ma_60"])
 
     # SELL: any one condition (reverse: above cloud OR close > ma60)
@@ -173,7 +181,7 @@ def _nasdaq_inverse_signal(
         daily_bearish = (
             is_below_cloud(close, span_a, span_b)
             and _valid(close, ma60) and close < ma60
-            and _valid(span_a, span_b) and span_a < span_b
+            and _valid(span_a_raw, span_b_raw) and span_a_raw < span_b_raw
         )
         if daily_bearish:
             w = weekly.iloc[-1]

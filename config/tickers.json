@@ -6,8 +6,8 @@
     "bear_2x": {"name": "KODEX 200선물인버스2X", "ticker": "252670"}
   },
   "nasdaq": {
-    "bull_1x": {"name": "KODEX 미국나스닥100", "ticker": "379800"},
+    "bull_1x": {"name": "KODEX 미국나스닥100", "ticker": "379810"},
     "bull_2x": {"name": "KODEX 미국나스닥100레버리지(합성 H)", "ticker": "409820"},
-    "bear_2x": {"name": "KODEX 미국나스닥100선물인버스(H)", "ticker": "251340"}
+    "bear_2x": {"name": "KODEX 미국나스닥100선물인버스(H)", "ticker": "409810"}
   }
 }

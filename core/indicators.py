@@ -35,6 +35,9 @@ def calc_ichimoku(
     # Shift forward by `base` periods: df.iloc[-1] reflects the cloud visible on the last bar
     df["ichimoku_span_a"] = span_a_raw.shift(base)
     df["ichimoku_span_b"] = span_b_raw.shift(base)
+    # Unshifted spans: represent the future cloud projected from today's data (used for cross checks)
+    df["ichimoku_span_a_raw"] = span_a_raw
+    df["ichimoku_span_b_raw"] = span_b_raw
     # Chikou: close plotted `base` periods in the past
     df["chikou"] = df["종가"].shift(-base)
     return df
